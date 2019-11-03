@@ -25,7 +25,7 @@ class joy_con_utility:
     ######################################################################
     def __init__(self):
         rospy.init_node('joy_con_node', anonymous=True)
-        self.twist_pub = rospy.Publisher('/mobile_base/commands/velocity', Twist, queue_size=1000)
+        self.twist_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1000)
         rospy.Subscriber('joy',Joy, self.joy_callback)
 
         self.twist = Twist()
