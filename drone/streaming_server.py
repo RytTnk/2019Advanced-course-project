@@ -36,17 +36,20 @@ class streaming_server_utility:
         self.SERVER_IP = self.config.get('server', 'ip')
         self.SERVER_PORT = int(self.config.get('server', 'port'))
         # Setting for streaming condition
-        self.FPS = int(self.config.get('packet', 'fps'))
+        self.IMG_FPS = int(self.config.get('packet', 'image_fps'))
         self.HEADER_SIZE = int(self.config.get('bytes', 'header_size'))
         self.IMAGE_WIDTH = int(self.config.get('pixels', 'image_width'))
         self.IMAGE_HEIGHT = int(self.config.get('pixels', 'image_height'))
         self.IMAGE_QUALITY = int(self.config.get('pixels', 'image_quality'))
+        self.PHOTO_IMG_X = int(self.config.get('pixels', 'photo_image_x'))
+        self.PHOTO_IMG_Y = int(self.config.get('pixels', 'photo_image_y'))
+        self.PHOTO_IMG_W = int(self.config.get('pixels', 'photo_image_w'))
+        self.PHOTO_IMG_H = int(self.config.get('pixels', 'photo_image_h'))
         # Setting for debug string
         self.INDENT = '    '
 
         ## For control FPS
-        self.old_time = 0.0
-        self.now_time = time.time()
+        self.start_time = time.perf_counter()
         self.fps = 0.0
         self.delay_time = 0.0
 
@@ -57,16 +60,6 @@ class streaming_server_utility:
         width = self.IMAGE_WIDTH
         height = self.IMAGE_HEIGHT
         self.d.capture(region=(x, y, x+width, y+height))
-
-    #_____________________________________________________________________
-
-    #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
-    # ----- Get time processing -----
-    ######################################################################
-    ## @brief      Get time processing
-    ######################################################################
-    def get_time_proc(self):
-        self.now_time = time.time()
     #_____________________________________________________________________
 
     #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
@@ -75,7 +68,7 @@ class streaming_server_utility:
     ## @brief      Set time processing
     ######################################################################
     def set_time_proc(self):
-        self.old_time = self.now_time
+        self.start_time = time.perf_counter()
     #_____________________________________________________________________
 
     #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
@@ -97,15 +90,13 @@ class streaming_server_utility:
     #_____________________________________________________________________
 
     #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
-    # ----- Calc FPS processing -----
+    # ----- Calculate FPS processing -----
     ######################################################################
-    ## @brief      Calc FPS processing
+    ## @brief      Calculate FPS processing
     ######################################################################
     def calc_fps_proc(self):
-        if self.now_time != self.old_time:
-            self.fps = 1.0 / (self.now_time - self.old_time)
-        else:
-            self.fps = 0.0
+        diff_time = time.perf_counter() - self.start_time
+        self.fps = 1.0 / diff_time
     #_____________________________________________________________________
 
     #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
@@ -114,11 +105,8 @@ class streaming_server_utility:
     ## @brief      Control FPS processing
     ######################################################################
     def ctrl_fps_proc(self):
-        if self.now_time != self.old_time:
-            self.delay_time = max(0, (1 / self.FPS - (self.now_time - self.old_time)))
-        else:
-            self.delay_time = 0.0
-
+        diff_time = time.perf_counter() - self.start_time
+        self.delay_time = max(0, (1 / self.IMG_FPS - diff_time))
         time.sleep(self.delay_time)
     #_____________________________________________________________________
 
@@ -129,9 +117,13 @@ class streaming_server_utility:
     ######################################################################
     def get_img_proc(self):
         self.img = self.d.get_latest_frame()
+        left   = self.PHOTO_IMG_X
+        top    = self.PHOTO_IMG_Y
+        right  = self.PHOTO_IMG_X + self.PHOTO_IMG_W
+        bottom = self.PHOTO_IMG_Y + self.PHOTO_IMG_H
+        self.img = self.img[top : bottom, left : right]
         self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB)
     #_____________________________________________________________________
-
 
     #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
     # ----- Transmit prepare setting processing -----
@@ -143,12 +135,11 @@ class streaming_server_utility:
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.bind((self.SERVER_IP, self.SERVER_PORT))
 
-        print("Wait for communication")
+        print("Wait for communication.")
         self.s.listen(1)
         self.soc, self.addr = self.s.accept()
-        print("Start transmit to "+str(self.addr))
+        print("Start transmit to "+str(self.addr)+".")
     #_____________________________________________________________________
-
 
     #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
     # ----- Transmit to client processing -----
@@ -169,11 +160,12 @@ class streaming_server_utility:
         try:
             self.soc.sendall(packet)
         except socket.error as e:
-            print('Connection closed.')
+            print('Closed connection.')
             exit()
     #_____________________________________________________________________
 
 #_____________________________________________________________________
+
 
 #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 # ----- Main processing -----
@@ -189,19 +181,20 @@ def main_proc():
     ss_utility.transmit_prepare_set_proc()
 
     while (True):
-        # Set asnd get timer counter
+        # Set timer counter
         ss_utility.set_time_proc()
-        ss_utility.get_time_proc()
 
         # Transmit image to client
         ss_utility.get_img_proc()
         ss_utility.transmit_to_client_proc()
 
-        # Cacl and control fps
-        ss_utility.calc_fps_proc()
+        # Control and calc fps
         ss_utility.ctrl_fps_proc()
+        ss_utility.calc_fps_proc()
+
+        # Print for debug
         #ss_utility.print_fps_proc()
-        ss_utility.print_delay_time_proc()
+        #ss_utility.print_delay_time_proc()
 
 if __name__ == '__main__':
     main_proc()
