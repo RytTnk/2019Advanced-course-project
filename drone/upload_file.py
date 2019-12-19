@@ -32,7 +32,8 @@ class google_drive_utility:
         self.gdrive_api = GoogleDrive(gauth)
 
         ## Create file object for google drive api
-        self.gdrive_file = self.gdrive_api.CreateFile()
+        folder_id = "1_YV-mrGXHZvSxf09scm3skMkSoX62vO3"
+        self.gdrive_file = self.gdrive_api.CreateFile({'parents': [{'kind': 'drive#fileLink', 'id':folder_id}]})
 
         ## Create file list object
         self.files = []
@@ -63,7 +64,9 @@ class google_drive_utility:
     ## @brief      Get google drive file url processing
     ######################################################################
     def get_gd_file_url_proc(self):
-        url = 'https://drive.google.com/uc?id=' + str( self.gdrive_file['id'] )
+        #url = 'https://drive.google.com/?id=' + str( self.gdrive_file['id'] )
+        #url = 'https://drive.google.com/uc?id=' + str( self.gdrive_file['id'] )
+        url = 'https://drive.google.com/file/d/' + str( self.gdrive_file['id'] ) + '/view?usp=sharing'
         return url
     #____________________________________________________________________
 

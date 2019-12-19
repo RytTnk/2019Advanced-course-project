@@ -14,6 +14,7 @@ import os
 import smile_intensity
 
 import upload_file
+import qr_code
 #_____________________________________________________________________
 
 
@@ -281,40 +282,46 @@ class streaming_server_utility:
 ######################################################################
 def main_proc():
 
-    # Prepare socket communication
-    ss_utility = streaming_server_utility()
-    ss_utility.receive_prepare_set_proc()
+    if 0:
+        # Prepare socket communication
+        ss_utility = streaming_server_utility()
+        ss_utility.receive_prepare_set_proc()
 
-    end_flag = 1
-    while(end_flag):
-        # Set timer counter
-        ss_utility.set_time_proc()
+        end_flag = 1
+        while(end_flag):
+            # Set timer counter
+            ss_utility.set_time_proc()
 
-        # Receive image from server
-        ss_utility.receive_from_server_proc()
-        ss_utility.restore_img_proc()
+            # Receive image from server
+            ss_utility.receive_from_server_proc()
+            ss_utility.restore_img_proc()
 
-        # Smile intensity processing
-        ss_utility.smile_intensity_proc()
-        ss_utility.print_smile_intensity_proc()
-        end_flag = ss_utility.save_smile_img_proc()
+            # Smile intensity processing
+            ss_utility.smile_intensity_proc()
+            ss_utility.print_smile_intensity_proc()
+            end_flag = ss_utility.save_smile_img_proc()
 
-        # Calculate fps
-        ss_utility.calc_fps_proc()
+            # Calculate fps
+            ss_utility.calc_fps_proc()
 
-        # Print for debug
-        #ss_utility.print_fps_proc()
-        #ss_utility.print_buff_size_proc()
-        #ss_utility.print_bin_size_proc()
-        #ss_utility.print_img_proc()
+            # Print for debug
+            #ss_utility.print_fps_proc()
+            #ss_utility.print_buff_size_proc()
+            #ss_utility.print_bin_size_proc()
+            #ss_utility.print_img_proc()
 
-    cv2.destroyAllWindows() # 作成したウィンドウを破棄
+        cv2.destroyAllWindows() # 作成したウィンドウを破棄
+
+        folder_path = ss_utility.get_save_folder_name_proc()
+        gd_utility.get_file_list_proc(folder_path)
+        best_smile_img_name = gd_utility.get_last_file_proc()
+    else:
+        folder_path = "20191219093722"
+        best_smile_img_name = "100_20191219093803.png"
 
     # Get best smile image name
     gd_utility = upload_file.google_drive_utility()
-    folder_path = ss_utility.get_save_folder_name_proc()
-    gd_utility.get_file_list_proc(folder_path)
-    best_smile_img_name = gd_utility.get_last_file_proc()
+
     target_path = folder_path + '/' + best_smile_img_name
 
     # Set google drive file processing
@@ -322,7 +329,10 @@ def main_proc():
     # Upload google drive file processing
     gd_utility.upload_gd_file_proc()
     # Get google drive file url processing
-    print(gd_utility.get_gd_file_url_proc())
+    url = gd_utility.get_gd_file_url_proc()
+    print(url)
+
+    qr_code.create_qrcode(url)
 
 
 if __name__ == '__main__':
