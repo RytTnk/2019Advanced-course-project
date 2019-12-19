@@ -108,7 +108,10 @@ class smile_intensity_utility:
     def smile_intensity_check_proc(self, image):
 
         self.get_img_proc(image)
-        gray = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+        try:
+            gray = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+        except:
+            gray = self.img
 
         faces = self.face_cascade.detectMultiScale(gray, 1.1, 5, minSize=(100,100))
         self.smile_intensity = 0

@@ -282,7 +282,7 @@ class streaming_server_utility:
 ######################################################################
 def main_proc():
 
-    if 0:
+    if 1:
         # Prepare socket communication
         ss_utility = streaming_server_utility()
         ss_utility.receive_prepare_set_proc()
@@ -312,15 +312,15 @@ def main_proc():
 
         cv2.destroyAllWindows() # 作成したウィンドウを破棄
 
+        # Get best smile image name
+        gd_utility = upload_file.google_drive_utility()
+
         folder_path = ss_utility.get_save_folder_name_proc()
         gd_utility.get_file_list_proc(folder_path)
         best_smile_img_name = gd_utility.get_last_file_proc()
     else:
         folder_path = "20191219093722"
         best_smile_img_name = "100_20191219093803.png"
-
-    # Get best smile image name
-    gd_utility = upload_file.google_drive_utility()
 
     target_path = folder_path + '/' + best_smile_img_name
 
