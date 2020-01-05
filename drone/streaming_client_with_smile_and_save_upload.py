@@ -59,6 +59,8 @@ class streaming_server_utility:
         ## For receive data
         self.buff = bytes()
         self.packets_info = list()
+        self.img = cv2.imread('init_img.png')
+        self.img_prev = self.img
 
         ## Created smile intensity utility
         self.si_utility = smile_intensity.smile_intensity_utility()
@@ -282,46 +284,40 @@ class streaming_server_utility:
 ######################################################################
 def main_proc():
 
-    if 1:
-        # Prepare socket communication
-        ss_utility = streaming_server_utility()
-        ss_utility.receive_prepare_set_proc()
+    # Prepare socket communication
+    ss_utility = streaming_server_utility()
+    ss_utility.receive_prepare_set_proc()
 
-        end_flag = 1
-        while(end_flag):
-            # Set timer counter
-            ss_utility.set_time_proc()
+    end_flag = 1
+    while(end_flag):
+        # Set timer counter
+        ss_utility.set_time_proc()
 
-            # Receive image from server
-            ss_utility.receive_from_server_proc()
-            ss_utility.restore_img_proc()
+        # Receive image from server
+        ss_utility.receive_from_server_proc()
+        ss_utility.restore_img_proc()
 
-            # Smile intensity processing
-            ss_utility.smile_intensity_proc()
-            ss_utility.print_smile_intensity_proc()
-            end_flag = ss_utility.save_smile_img_proc()
+        # Smile intensity processing
+        ss_utility.smile_intensity_proc()
+        ss_utility.print_smile_intensity_proc()
+        end_flag = ss_utility.save_smile_img_proc()
 
-            # Calculate fps
-            ss_utility.calc_fps_proc()
+        # Calculate fps
+        ss_utility.calc_fps_proc()
 
-            # Print for debug
-            #ss_utility.print_fps_proc()
-            #ss_utility.print_buff_size_proc()
-            #ss_utility.print_bin_size_proc()
-            #ss_utility.print_img_proc()
+        # Print for debug
+        #ss_utility.print_fps_proc()
+        #ss_utility.print_buff_size_proc()
+        #ss_utility.print_bin_size_proc()
+        #ss_utility.print_img_proc()
 
-        cv2.destroyAllWindows() # 作成したウィンドウを破棄
+    cv2.destroyAllWindows() # 作成したウィンドウを破棄
 
-        # Get best smile image name
-        gd_utility = upload_file.google_drive_utility()
-
-        folder_path = ss_utility.get_save_folder_name_proc()
-        gd_utility.get_file_list_proc(folder_path)
-        best_smile_img_name = gd_utility.get_last_file_proc()
-    else:
-        folder_path = "20191219093722"
-        best_smile_img_name = "100_20191219093803.png"
-
+    # Get best smile image name
+    gd_utility = upload_file.google_drive_utility()
+    folder_path = ss_utility.get_save_folder_name_proc()
+    gd_utility.get_file_list_proc(folder_path)
+    best_smile_img_name = gd_utility.get_last_file_proc()
     target_path = folder_path + '/' + best_smile_img_name
 
     # Set google drive file processing
@@ -332,6 +328,7 @@ def main_proc():
     url = gd_utility.get_gd_file_url_proc()
     print(url)
 
+    # Print qr code
     qr_code.create_qrcode(url)
 
 
