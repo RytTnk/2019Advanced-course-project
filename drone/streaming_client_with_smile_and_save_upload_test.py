@@ -72,6 +72,12 @@ class streaming_server_utility:
         print(self.folder_name)
         os.mkdir(self.folder_name)
         self.end_time = 0
+
+        ## For debug
+        self.stack_ok = 0
+        self.stack_packet_head_address = 0
+        self.stack_binary_size = 0
+        self.stack_img = bytes()
     #_____________________________________________________________________
 
     #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
@@ -163,32 +169,69 @@ class streaming_server_utility:
     ## @brief      Restore image processing
     ######################################################################
     def restore_img_proc(self):
-        if len(self.packets_info) > 0:
-            packet_head_address, binary_size = self.packets_info.pop()
-            img_bytes = self.buff[packet_head_address + self.HEADER_SIZE : packet_head_address + self.HEADER_SIZE + binary_size]
-            self.buff = self.buff[packet_head_address + self.HEADER_SIZE + binary_size:]
+        #if len(self.packets_info) > 0:
+        if self.stack_ok == 1:
+            #packet_head_address, binary_size = self.packets_info.pop()
+            #img_bytes = self.buff[packet_head_address + self.HEADER_SIZE : packet_head_address + self.HEADER_SIZE + binary_size]
+            #self.buff = self.buff[packet_head_address + self.HEADER_SIZE + binary_size:]
+            #img_bytes = self.buff[self.stack_packet_head_address + self.HEADER_SIZE : self.stack_packet_head_address + self.HEADER_SIZE + self.stack_binary_size]
+            #self.buff = self.buff[self.stack_packet_head_address + self.HEADER_SIZE + self.stack_binary_size:]
 
             # Restore image
-            self.img = np.frombuffer(img_bytes, dtype=np.uint8)
+            #self.img = np.frombuffer(img_bytes, dtype=np.uint8)
+            self.img = np.frombuffer(self.stack_img, dtype=np.uint8)
             try:
                 self.img = cv2.imdecode(self.img, 1)
+                #print("OK")
+                #print(len(self.packets_info))
+                #print(img_bytes)
+                #print(len(self.buff))
+                #print(binary_size)
+                #print(self.stack_packet_head_address)
+                #print(self.stack_binary_size)
+                #print(self.img.shape)
             except:
-                self.img = self.img_prev
+                print("error1")
+                #print(len(self.packets_info))
+                #print(img_bytes)
+                #print(len(self.buff))
+                #print(binary_size)
+                #print(self.stack_packet_head_address)
+                #print(self.stack_binary_size)
+                #print(self.img.shape)
+                #exit()
+                #self.img = self.img_prev
 
             # Image check
-            height, width = self.img.shape[:2]
-            if not (height > 0 and width > 0):
+            try:
+                height, width = self.img.shape[:2]
+                if not (height > 0 and width > 0):
+                    self.img = self.img_prev
+                    #print("NG : "+ str(print(len(self.buff))) + "," + str(height) + "," + str(width))
+                #else:
+                    #print("OK : "+ str(print(len(self.buff))) + "," + str(height) + "," + str(width))
+                    #print("OK")
+                    #print(self.stack_binary_size)
+                    #print(len(self.buff))
+                    #print("")
+            except:
+                print("error2")
+                #print(len(self.buff))
+                #print(img_bytes)
+                #print(self.img)
+                #print(self.img.shape)
+                #print(packet_head_address)
+                #print(binary_size)
+                #print(self.stack_packet_head_address)
+                #print(self.stack_binary_size)
+                #print(len(self.buff))
+                #exit()
                 self.img = self.img_prev
-                print("NG : "+ str(height) + "," + str(width))
-            else:
-                print("OK : "+ str(height) + "," + str(width))
 
             #try:
             #    self.img = cv2.imdecode(self.img, 1)
             #except:
             #    self.img = self.img_prev
-
-            self.img_prev = self.img
     #_____________________________________________________________________
 
     #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
@@ -215,16 +258,27 @@ class streaming_server_utility:
 
         # Seek to latest frame
         packet_head = 0
+        flag = 0
         while True:
             if len(self.buff) >= packet_head + self.HEADER_SIZE:
                 self.binary_size = int.from_bytes(self.buff[packet_head:packet_head + self.HEADER_SIZE], 'big')
                 if len(self.buff) >= packet_head + self.HEADER_SIZE + self.binary_size:
                     self.packets_info.append((packet_head, self.binary_size))
-                    packet_head += self.HEADER_SIZE + self.binary_size
+                    self.stack_packet_head_address = packet_head
+                    self.stack_binary_size = self.binary_size
+                    self.stack_img = self.buff[self.stack_packet_head_address + self.HEADER_SIZE : self.stack_packet_head_address + self.HEADER_SIZE + self.stack_binary_size]
+                    self.buff = self.buff[self.stack_packet_head_address + self.HEADER_SIZE + self.stack_binary_size:]
+
+                    print(len(self.buff))
+
+                    #packet_head += self.HEADER_SIZE + self.binary_size
+                    flag = 1
                 else:
                     break
             else:
                 break
+
+            self.stack_ok = flag
     #_____________________________________________________________________
 
     #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
