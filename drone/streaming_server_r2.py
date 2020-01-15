@@ -184,16 +184,16 @@ def main_proc():
 
     # Prepare socket communication
     ss_utility = streaming_server_utility()
-    init_flag = 0
+    init_flg = 0
 
     while (True):
-        if init_flag == 1:
+        if init_flg == 1:
             # Set timer counter
             ss_utility.set_time_proc()
 
             # Transmit image to client
             ss_utility.get_img_proc()
-            init_flag = ss_utility.transmit_to_client_proc()
+            init_flg = ss_utility.transmit_to_client_proc()
 
             # Control and calc fps
             ss_utility.ctrl_fps_proc()
@@ -205,7 +205,7 @@ def main_proc():
         else:
             ss_utility.transmit_prepare_set_proc()
 
-            init_flag = 1
+            init_flg = 1
 
 
 if __name__ == '__main__':
