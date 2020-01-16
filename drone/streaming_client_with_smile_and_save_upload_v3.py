@@ -21,10 +21,11 @@ import qr_code
 #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 # ----- Utility of streaming client library -----
 ######################################################################
-## @version    0.2.0
+## @version    0.3.0
 ## @author     K.Ishimori
 ## @date       2019/12/13 Newly created.                  [K.Ishimori]
 ##             2020/01/07 Fixed bug for restore image     [K.Ishimori]
+##             2020/01/16 Added spap shot processing      [K.Ishimori]
 ## @brief      Utility of streaming client library
 ######################################################################
 class streaming_server_utility:
@@ -74,6 +75,9 @@ class streaming_server_utility:
         print(self.folder_name)
         os.mkdir(self.folder_name)
         self.end_time = 0
+
+        ## For snap shot
+        self.snap_time = 0
     #_____________________________________________________________________
 
     #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
@@ -272,7 +276,24 @@ class streaming_server_utility:
                 end_flag = 0
 
         return end_flag
+    #_____________________________________________________________________
 
+    #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+    # ----- Save snap image processing -----
+    ######################################################################
+    ## @brief      Save snap image processing
+    ######################################################################
+    def save_snap_img_proc(self):
+
+        now_time = time.time()
+        # Set save image name
+        self.save_name = self.folder_name + '/' + "spap_img" + ".png"
+        # Set snap time [ms]
+        span = 3
+
+        if now_time > self.snap_time:
+            cv2.imwrite(self.save_name,self.img)
+            self.span_time = now_time + span
     #_____________________________________________________________________
 
 
@@ -308,6 +329,9 @@ def main_proc():
 
         # Calculate fps
         ss_utility.calc_fps_proc()
+
+        # Save spap image
+        ss_utility.save_snap_img_proc()
 
         # Print for debug
         #ss_utility.print_fps_proc()
