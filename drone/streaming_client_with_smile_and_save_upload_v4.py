@@ -30,7 +30,7 @@ import qr_code
 ## @author     K.Ishimori
 ## @date       2019/12/13 Newly created.                  [K.Ishimori]
 ##             2020/01/07 Fixed bug for restore image     [K.Ishimori]
-##             2020/01/16 Added spap shot processing      [K.Ishimori]
+##             2020/01/16 Added snap shot processing      [K.Ishimori]
 ##             2020/01/16 Supported python2               [K.Ishimori]
 ## @brief      Utility of streaming client library
 ######################################################################
@@ -314,7 +314,7 @@ class streaming_server_utility:
 
         now_time = time.time()
         # Set save image name
-        self.save_name = self.folder_name + '/' + "spap_img" + ".png"
+        self.save_name = self.folder_name + '/' + "000_snap_img" + ".png"
         # Set snap time [ms]
         span = 3
 
@@ -357,7 +357,7 @@ def main_proc():
         # Calculate fps
         ss_utility.calc_fps_proc()
 
-        # Save spap image
+        # Save snap image
         ss_utility.save_snap_img_proc()
 
         # Print for debug
