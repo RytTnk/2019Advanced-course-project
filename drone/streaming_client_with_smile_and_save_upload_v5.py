@@ -20,18 +20,23 @@ import smile_intensity
 
 import upload_file
 import qr_code
+
+import subprocess
+import control_wavefile
 #_____________________________________________________________________
 
 
 #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 # ----- Utility of streaming client library -----
 ######################################################################
-## @version    0.4.0
+## @version    0.5.0
 ## @author     K.Ishimori
 ## @date       2019/12/13 Newly created.                  [K.Ishimori]
 ##             2020/01/07 Fixed bug for restore image     [K.Ishimori]
 ##             2020/01/16 Added snap shot processing      [K.Ishimori]
 ##             2020/01/16 Supported python2               [K.Ishimori]
+##             2020/01/19 Fixed comments                  [K.Kosaka]
+##             2020/01/31 Added guide voice processing    [K.Ishimori]
 ## @brief      Utility of streaming client library
 ######################################################################
 class streaming_server_utility:
@@ -83,6 +88,7 @@ class streaming_server_utility:
         ## Created smile intensity utility
         self.si_utility = smile_intensity.smile_intensity_utility()
         self.smile_intensity_point = 0
+        self.smile_intensity_point_max = 0
         self.smile_intensity_point_prev = 0
         self.smile_intensity_point_th = 30
         dt_now = datetime.datetime.now()
@@ -93,6 +99,10 @@ class streaming_server_utility:
 
         ## For snap shot
         self.snap_time = 0
+
+        ## Created control wavefile utility
+        self.cw_utility = control_wavefile.control_wavefile_utility()
+        self.wavefile_dir = 'wavefile'
     #_____________________________________________________________________
 
     #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
@@ -105,7 +115,6 @@ class streaming_server_utility:
             self.start_time = time.perf_counter()
         except: # python2
             self.start_time = time.time()
-
     #_____________________________________________________________________
 
     #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
@@ -270,6 +279,15 @@ class streaming_server_utility:
     #_____________________________________________________________________
 
     #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+    # ----- Print max point smile intensity processing -----
+    ######################################################################
+    ## @brief      Store max point smile intensity processing
+    ######################################################################
+    def print_max_point_smile_intensity_proc(self):
+        print(self.smile_intensity_point_max)
+    #_____________________________________________________________________
+
+    #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
     # ----- Get save folder name processing -----
     ######################################################################
     ## @brief      Get save folder name processing
@@ -294,9 +312,13 @@ class streaming_server_utility:
         elif self.smile_intensity_point > self.smile_intensity_point_th:
             cv2.imwrite(self.save_name,self.img)
 
+        if self.smile_intensity_point_max < self.smile_intensity_point:
+            self.smile_intensity_point_max = self.smile_intensity_point
+
         if self.smile_intensity_point > self.smile_intensity_point_th:
             if self.end_time == 0:
                 self.end_time = time.time() + 5
+
         if self.end_time != 0:
             if time.time() > self.end_time:
                 print("end")
@@ -323,6 +345,46 @@ class streaming_server_utility:
             self.span_time = now_time + span
     #_____________________________________________________________________
 
+    #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+    # ----- Play start wavefile processing -----
+    ######################################################################
+    ## @brief      Play start wavefile processing
+    ######################################################################
+    def play_start_wav_proc(self):
+        self.cw_utility.PlayWavFie(self.wavefile_dir+"\\01_start_2.wav")
+    #_____________________________________________________________________
+
+    #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+    # ----- Play medium wavefile processing -----
+    ######################################################################
+    ## @brief      Play medium wavefile processing
+    ######################################################################
+    def play_mid_wav_proc(self):
+        subprocess.Popen(['python','play_mid_wavefile.py'])
+    #_____________________________________________________________________
+
+    #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+    # ----- Play end wavefile processing -----
+    ######################################################################
+    ## @brief      Play end wavefile processing
+    ######################################################################
+    def play_end_wav_proc(self):
+        subprocess.Popen(['python','play_end_wavefile.py'])
+    #_____________________________________________________________________
+
+    #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+    # ----- Play fin wavefile processing -----
+    ######################################################################
+    ## @brief      Play fin wavefile processing
+    ######################################################################
+    def play_fin_wav_proc(self):
+        if self.smile_intensity_point_max > 80:
+            self.cw_utility.PlayWavFie(self.wavefile_dir+"\\04_class_a.wav")
+        elif self.smile_intensity_point_max > 60:
+            self.cw_utility.PlayWavFie(self.wavefile_dir+"\\04_class_b.wav")
+        else:
+            self.cw_utility.PlayWavFie(self.wavefile_dir+"\\04_class_c.wav")
+    #_____________________________________________________________________
 
 #_____________________________________________________________________
 
@@ -339,6 +401,9 @@ def main_proc():
     # Prepare socket communication
     ss_utility = streaming_server_utility()
     ss_utility.receive_prepare_set_proc()
+
+    # Play start wave file
+    ss_utility.play_start_wav_proc()
 
     end_flag = 1
     while(end_flag):
@@ -368,6 +433,9 @@ def main_proc():
 
     cv2.destroyAllWindows() # 作成したウィンドウを破棄
 
+    # Play end wave file
+    ss_utility.play_end_wav_proc()
+
     # Get best smile image name
     gd_utility = upload_file.google_drive_utility()
     folder_path = ss_utility.get_save_folder_name_proc()
@@ -385,6 +453,10 @@ def main_proc():
 
     # Print qr code
     qr_code.create_qrcode(url)
+
+    # Play fin wave file
+    ss_utility.print_max_point_smile_intensity_proc()
+    ss_utility.play_fin_wav_proc()
 
 
 if __name__ == '__main__':
