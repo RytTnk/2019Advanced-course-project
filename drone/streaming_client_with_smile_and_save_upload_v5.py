@@ -452,7 +452,8 @@ def main_proc():
     print(url)
 
     # Print qr code
-    qr_code.create_qrcode(url)
+#    qr_code.create_qrcode(url)
+    qr_code.qr_and_photo_show(url, target_path)
 
     # Play fin wave file
     ss_utility.print_max_point_smile_intensity_proc()

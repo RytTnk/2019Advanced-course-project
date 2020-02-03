@@ -113,7 +113,7 @@ class smile_intensity_utility:
         except:
             gray = self.img
 
-        faces = self.face_cascade.detectMultiScale(gray, 1.1, 5, minSize=(100,100))
+        faces = self.face_cascade.detectMultiScale(gray, 1.1, 5, minSize=(40,40))
         self.smile_intensity = 0
         for (x,y,w,h) in faces:
             cv2.rectangle(self.img,(x,y),(x+w,y+h),(255, 0, 0),2) # blue
@@ -132,7 +132,7 @@ class smile_intensity_utility:
                      roi_gray[index1][index2] = int(float(item2 - lmin)/float(lmax-lmin) * item2)
             #cv2.imshow("roi_gray2",roi_gray)  # 確認のため輝度を正規化した画像を表示
 
-            smiles= self.smile_cascade.detectMultiScale(roi_gray,scaleFactor= 1.1, minNeighbors=0, minSize=(20, 20)) # 笑顔識別
+            smiles= self.smile_cascade.detectMultiScale(roi_gray,scaleFactor= 1.1, minNeighbors=0, minSize=(10, 10)) # 笑顔識別
             if len(smiles) > 0: # 笑顔領域がなければ以下の処理を飛ばす．#if len(smiles) <=0 : continue でもよい．その場合以下はインデント不要
                 # サイズを考慮した笑顔認識
                 smile_neighbors = len(smiles)
