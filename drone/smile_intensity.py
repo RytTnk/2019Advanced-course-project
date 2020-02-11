@@ -12,7 +12,7 @@ import os
 #‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 # ----- Utility of smile intensity library -----
 ######################################################################
-## @version    0.1.0
+## @version    0.1.1
 ## @author     K.Ishimori
 ## @date       2019/10/23 Newly created.                  [K.Ishimori]
 ## @brief      Utility of smile intensity library
@@ -25,6 +25,8 @@ class smile_intensity_utility:
     ######################################################################
     def __init__(self):
         cwd_path = os.path.dirname(os.path.abspath(__file__))
+#        self.face_cascade  = cv2.CascadeClassifier(cwd_path+'/haarcascades/haarcascade_frontalface_default.xml')
+#        self.face_cascade  = cv2.CascadeClassifier(cwd_path+'/haarcascades/haarcascade_frontalface_alt2.xml')
         self.face_cascade  = cv2.CascadeClassifier(cwd_path+'/haarcascade_frontalface_default.xml')
         self.smile_cascade = cv2.CascadeClassifier(cwd_path+'/haarcascade_smile.xml')
 
@@ -151,3 +153,38 @@ class smile_intensity_utility:
     #_____________________________________________________________________
 
 #_____________________________________________________________________
+
+
+#‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+# ----- Main processing -----
+######################################################################
+## @brief      Main processing
+## @callgraph
+## @callergraph
+######################################################################
+def main_proc():
+ # start the webcam feed
+    cap = cv2.VideoCapture(0)
+    cap.set(3,960)  # 320 320 640 720 960 1280
+    cap.set(4,540)  # 180 240 360 405 540  720
+#    print(cap.get(3))
+#    print(cap.get(4))
+
+    si = smile_intensity_utility()
+    while True:
+        # Find haar cascade to draw bounding box around face
+        ret, frame = cap.read()
+        if not ret:
+            break
+#        facecasc = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+        si.smile_intensity_check_proc(frame)
+        si.smile_intensity_point = si.store_smile_intensity_proc()
+        print(si.smile_intensity_point)
+#        si.print_smile_intensity_proc()
+
+    cap.release()
+    cv2.destroyAllWindows()
+    
+
+if __name__ == '__main__':
+    main_proc()
